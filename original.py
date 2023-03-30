@@ -25,7 +25,7 @@ parameters = {
     "function": "TIME_SERIES_INTRADAY",
     "symbol": STOCK,
     "interval": "60min",
-    "apikey": connect.API_KEY
+    "apikey": connect.STOCK_API_KEY
 }
 
 url = 'https://www.alphavantage.co/query'
@@ -55,7 +55,7 @@ news_parameters = {
     "q": COMPANY_NAME,
     "from": yesterday_date,
     "sortBy": "popularity",
-    "apiKey": connect.NEWS_KEY
+    "apiKey": connect.NEWS_API_KEY
 }
 
 news_url = 'https://newsapi.org/v2/everything'
