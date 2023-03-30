@@ -1,10 +1,11 @@
 import requests
 import connect
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 
 STOCK = "TSLA"
 COMPANY_NAME = "Tesla Inc"
 
+yesterday_date = date.today() - timedelta(days=1)
 yesterday = datetime.today() - timedelta(days=1)
 day_before = datetime.today() - timedelta(days=2)
 
@@ -31,18 +32,40 @@ r = requests.get(url, params=parameters)
 data = r.json()
 yesterday_data = f"{yesterday.year}-{make_double(yesterday.month)}-{make_double(yesterday.day)} 18:00:00"
 day_before_data = f"{day_before.year}-{make_double(day_before.month)}-{make_double(day_before.day)} 18:00:00"
+# print(yesterday_data)
+# print(day_before_data)
 
-yesterday_close = data["Time Series (60min)"][yesterday_data]["4. close"]
-day_before_close = data["Time Series (60min)"][day_before_data]["4. close"]
+yesterday_close = float(data["Time Series (60min)"][yesterday_data]["4. close"])
+day_before_close = float(data["Time Series (60min)"][day_before_data]["4. close"])
+# print(yesterday_close)
+# print(day_before_close)
 
-print(yesterday_close)
-print(day_before_close)
+difference = yesterday_close - day_before_close
+stock_change = (difference / yesterday_close) * 100
+# print(stock_change)
 
-difference = float(yesterday_close) - float(day_before_close)
-print(difference)
+if -5 >= stock_change >= 5:
+    print("Get News!")
 
 # STEP 2: Use https://newsapi.org
 # Instead of printing ("Get News"), actually get the first 3 news pieces for the COMPANY_NAME. 
+print(yesterday_date)
+news_parameters = {
+    "q": COMPANY_NAME,
+    "from": yesterday_date,
+    "sortBy": "popularity",
+    "apiKey": connect.NEWS_KEY
+}
+
+news_url = 'https://newsapi.org/v2/everything'
+nr = requests.get(news_url, params=news_parameters)
+news_data = nr.json()
+
+print(STOCK)
+print(str(f"{round(stock_change)}%"))
+print(news_data["articles"][0]["title"])
+print(news_data["articles"][0]["description"])
+
 
 # STEP 3: Use https://www.twilio.com
 # Send a separate message with the percentage change and each article's title and description to your phone number.
