@@ -30,20 +30,19 @@ day_before_yesterday_closing_price = float(day_before_yesterday_data["4. close"]
 
 difference = abs(yesterday_closing_price - day_before_yesterday_closing_price)
 diff_percent = difference / yesterday_closing_price * 100
-print(diff_percent)
 
 if diff_percent > 5:
-    print("Get News!")
+    pass
+else:
+    news_parameters = {
+        "qInTitle": COMPANY_NAME,
+        "apiKey": connect.NEWS_API_KEY
+    }
 
-# news_parameters = {
-#     "q": COMPANY_NAME,
-#     "from": yesterday_date,
-#     "sortBy": "popularity",
-#     "apiKey": connect.NEWS_API_KEY
-# }
-
-# nr = requests.get(NEWS_ENDPOINT, params=news_parameters)
-# news_data = nr.json()
+    news_response = requests.get(NEWS_ENDPOINT, params=news_parameters)
+    articles = news_response.json()["articles"]
+    three_articles = articles[:3]
+    print(three_articles)
 
 # client = Client(connect.ACCOUNT_SID, connect.AUTH_TOKEN)
 
