@@ -1,12 +1,10 @@
 import requests
 import connect
+import os
 from twilio.rest import Client
 
 STOCK = "TSLA"
 COMPANY_NAME = "Tesla Inc"
-
-STOCK_ENDPOINT = "https://www.alphavantage.co/query"
-NEWS_ENDPOINT = "https://newsapi.org/v2/everything"
 
 parameters = {
     "function": "TIME_SERIES_INTRADAY",
@@ -15,7 +13,7 @@ parameters = {
     "apikey": connect.STOCK_API_KEY
 }
 
-response = requests.get(STOCK_ENDPOINT, params=parameters)
+response = requests.get(connect.STOCK_ENDPOINT, params=parameters)
 data = response.json()["Time Series (60min)"]
 data_list = [value for (key, value) in data.items()]
 
@@ -36,25 +34,28 @@ else:
 
 diff_percent = round(difference / yesterday_closing_price * 100)
 
-if abs(diff_percent) > .5:
+if abs(diff_percent) < .1:
     news_parameters = {
         "qInTitle": COMPANY_NAME,
         "apiKey": connect.NEWS_API_KEY
     }
 
-    news_response = requests.get(NEWS_ENDPOINT, params=news_parameters)
+    news_response = requests.get(connect.NEWS_ENDPOINT, params=news_parameters)
     articles = news_response.json()["articles"]
     three_articles = articles[:3]
 
     formatted_articles = [f"{COMPANY_NAME}: {up_down}{diff_percent}%\n"
                           f"Headline: {article['title']} \n"
-                          f"Brief: {article['description']}" for article in articles]
+                          f"Brief: {article['description']}" for article in three_articles]
+    APP_ID = os.environ["TWILIO_ACCOUNT_SID"]
+    API_TOKEN = os.environ["TWILIO_AUTH_TOKEN"]
 
-    client = Client(connect.TWILIO_SID, connect.TWILIO_AUTH_TOKEN)
+    client = Client(APP_ID, API_TOKEN)
 
-    # for article in articles:
-    #     message = client.messages.create(
-    #         body=article,
-    #         from_='+18662711651',
-    #         to='+17143231961'
-    #     )
+    for article in formatted_articles:
+        print(article)
+        message = client.messages.create(
+            body=article,
+            from_=connect.TWILIO_VIRTUAL_NUMBER,
+            to=connect.TWILIO_VERIFIED_NUMBER
+        )
